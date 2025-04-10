@@ -1,0 +1,54 @@
+import csv
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+import time
+
+def scrape_url_with_selenium(driver, url):
+    try:
+        # Open the URL in the existing browser window
+        driver.get(url)
+        
+        # Wait for some time to allow the URL to update (adjust the sleep duration as needed)
+        time.sleep(2)  # Adjust the duration based on your page loading time
+        
+        # Get the current URL from the address bar
+        updated_url = driver.current_url
+        return updated_url
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+def scrape_and_append_to_csv(input_file, output_file):
+    # Specify the path to the user profile directory
+    user_profile_path = r"C:\Users\Admin\AppData\Local\Google\Chrome\User Data\Profile 2"
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument(f"user-data-dir={user_profile_path}")
+    
+    # Create the webdriver with user profile
+    chrome_service = ChromeService()  # No need to specify chromedriver executable
+    driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
+    
+    try:
+        with open(input_file, 'r') as infile:
+            urls = [url.strip() for url in infile.readlines()]  # Remove leading and trailing whitespaces
+            
+        for url in urls:
+            updated_url = scrape_url_with_selenium(driver, url)
+            if updated_url is not None:
+                with open(output_file, 'a', newline='', encoding='utf-8') as csvfile:
+                    csv_writer = csv.writer(csvfile)
+                    csv_writer.writerow([url, updated_url])
+                    print(f"Updated URL from {url} added to CSV: {updated_url}")
+            else:
+                print(f"Failed to scrape updated URL from {url}.")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        # Close the browser window when done
+        driver.quit()
+        print(f"\nData appended to {output_file}.")
+
+# Example usage
+input_file_path = "input.csv"
+output_file_path = "output.csv"
+scrape_and_append_to_csv(input_file_path, output_file_path)
