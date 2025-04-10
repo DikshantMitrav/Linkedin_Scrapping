@@ -46,8 +46,8 @@ chrome_service = ChromeService()  # No need to specify chromedriver executable
 driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
 
 # Example usage with CSS selector
-input_file_path = "mustansir.csv"
-output_file_path = "mustansir_output.csv"
+input_file_path = "input.csv"
+output_file_path = "output.csv"
 css_selector_to_extract = ".org-top-card-summary-info-list__info-item"
 
 scrape_and_append_to_csv(input_file_path, output_file_path)
