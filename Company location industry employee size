@@ -1,0 +1,56 @@
+import csv
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
+
+def scrape_value_with_selenium(driver, url, css_selector):
+    try:
+        # Open the URL in the existing browser window
+        driver.get(url)
+        # Wait for some time to allow the page to load (adjust the sleep duration as needed)
+        time.sleep(5)  # Adjust the duration based on your page loading time
+        # Wait for the presence of the element using WebDriverWait
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, css_selector)))
+        # Use Selenium to find all elements with the specified CSS selector
+        result_elements = driver.find_elements(By.CSS_SELECTOR, css_selector)
+        # Extract text from all found elements and concatenate them with commas
+        result_values = ', '.join(element.text for element in result_elements)
+        return result_values
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+def scrape_and_append_to_csv(input_file, output_file):
+    with open(input_file, 'r', encoding='utf-8') as infile, open(output_file, 'a', newline='', encoding='utf-8') as csvfile:
+        csv_writer = csv.writer(csvfile)
+        for url in infile:
+            url = url.strip()  # Remove leading and trailing whitespaces
+            result_text = scrape_value_with_selenium(driver, url, css_selector_to_extract)
+            if result_text is not None:
+                csv_writer.writerow([url, result_text])
+                print(f"Data from {url} added to CSV.")
+            else:
+                print(f"Failed to scrape data from {url}.")
+    print(f"\nData appended to {output_file}.")
+
+# Specify the path to the user profile directory
+user_profile_path = r"C:\Users\Admin\AppData\Local\Google\Chrome\User Data\Profile 2"
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument(f"user-data-dir={user_profile_path}")
+
+# Create the webdriver with user profile
+chrome_service = ChromeService()  # No need to specify chromedriver executable
+driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
+
+# Example usage with CSS selector
+input_file_path = "mustansir.csv"
+output_file_path = "mustansir_output.csv"
+css_selector_to_extract = ".org-top-card-summary-info-list__info-item"
+
+scrape_and_append_to_csv(input_file_path, output_file_path)
+
+# Close the browser window when done
+driver.quit()
